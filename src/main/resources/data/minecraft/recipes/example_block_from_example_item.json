@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "building",
+  "ingredients": [
+    {
+      "item": "justinmod:example_block"
+    }
+  ],
+  "result": {
+    "item": "justinmod:example_item",
+    "count": 9
+  }
+}

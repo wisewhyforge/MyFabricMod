@@ -1,11 +1,19 @@
 package com.justin.justinmod;
 
+import com.justin.justinmod.entity.ModEntities;
+import com.justin.justinmod.entity.custom.HelicopterEntity;
 import net.fabricmc.api.ModInitializer;
 
+import net.fabricmc.fabric.api.object.builder.v1.entity.FabricDefaultAttributeRegistry;
+import net.minecraft.util.Identifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class JustinMod implements ModInitializer {
+
+	public static final Identifier JUSTIN_EXPLOSION_BEAM_TEXTURE = new Identifier(JustinMod.MOD_ID, "textures/entity/guardian_beam.png");
+
+
 	public static final String MOD_ID = "justinmod";
 
 	// This logger is used to write text to the console and the log file.
@@ -19,6 +27,8 @@ public class JustinMod implements ModInitializer {
 		// However, some things (like resources) may still be uninitialized.
 		// Proceed with mild caution.
 
-		LOGGER.info("Hello Fabric world!");
+		ModItemGroups.registerItemGroups();
+		ModItems.registerModItems();
+		ModBlocks.registerModBlocks();
 	}
 }

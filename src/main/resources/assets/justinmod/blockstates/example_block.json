@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "justinmod:block/example_block"
+    }
+  }
+}

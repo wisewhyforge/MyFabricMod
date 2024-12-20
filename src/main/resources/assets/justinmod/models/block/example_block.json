@@ -1,0 +1,6 @@
+{
+  "parent": "block/cube_all",
+  "textures": {
+    "all":"justinmod:block/example_block"
+  }
+}
