@@ -4,7 +4,9 @@ import com.justin.justinmod.entity.ModEntities;
 import com.justin.justinmod.entity.custom.HelicopterEntity;
 import net.fabricmc.api.ModInitializer;
 
+import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents;
 import net.fabricmc.fabric.api.object.builder.v1.entity.FabricDefaultAttributeRegistry;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.Identifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,5 +32,21 @@ public class JustinMod implements ModInitializer {
 		ModItemGroups.registerItemGroups();
 		ModItems.registerModItems();
 		ModBlocks.registerModBlocks();
+
+		ServerLivingEntityEvents.AFTER_DEATH.register((entity, source) -> {
+			if (entity instanceof PlayerEntity) {
+				if (entity.getOffHandStack().getItem() instanceof ExampleItem item) {
+					if (item.laser != null) {
+						item.laser.kill();
+					}
+				} else if (entity.getMainHandStack().getItem() instanceof ExampleItem item) {
+					if (item.laser != null) {
+						item.laser.kill();
+					}
+				}
+			}
+		});
 	}
+
+
 }

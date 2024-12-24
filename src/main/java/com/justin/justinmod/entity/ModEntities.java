@@ -1,9 +1,11 @@
 package com.justin.justinmod.entity;
 
 import com.justin.justinmod.JustinMod;
+import com.justin.justinmod.entity.custom.GuardianLaserAuraEntity;
 import com.justin.justinmod.entity.custom.HelicopterEntity;
 import com.justin.justinmod.entity.custom.HomingBulletEntity;
 import net.fabricmc.fabric.api.object.builder.v1.entity.FabricEntityTypeBuilder;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.SpawnGroup;
 import net.minecraft.registry.Registries;
@@ -16,5 +18,9 @@ public class ModEntities {
             FabricEntityTypeBuilder.create(SpawnGroup.MISC, HelicopterEntity::new).build());
     public static final EntityType<HomingBulletEntity> HOMING_BULLET = Registry.register(Registries.ENTITY_TYPE, new Identifier(JustinMod.MOD_ID, "homing_bullet"),
             FabricEntityTypeBuilder.<HomingBulletEntity>create(SpawnGroup.MISC, HomingBulletEntity::new).build());
+
+    public static final EntityType<GuardianLaserAuraEntity> GUARDIAN_LASER_AURA = Registry.register(Registries.ENTITY_TYPE, new Identifier(JustinMod.MOD_ID, "guardian_laser_aura"),
+            FabricEntityTypeBuilder.<GuardianLaserAuraEntity>create(SpawnGroup.MISC, GuardianLaserAuraEntity::new).build());
+
 
 }
