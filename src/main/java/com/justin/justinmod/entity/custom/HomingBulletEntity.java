@@ -220,7 +220,7 @@ public class HomingBulletEntity extends ProjectileEntity {
                 this.targetY = MathHelper.clamp(this.targetY * 1.025, -1.0, 1.0);
                 this.targetZ = MathHelper.clamp(this.targetZ * 1.025, -1.0, 1.0);
                 Vec3d vec3d = this.getVelocity();
-                this.setVelocity(vec3d.add((this.targetX - vec3d.x) * 0.2, (this.targetY - vec3d.y) * 0.2, (this.targetZ - vec3d.z) * 0.2));
+                this.setVelocity(vec3d.add((this.targetX - vec3d.x) * 1.2, (this.targetY - vec3d.y) * 1.2, (this.targetZ - vec3d.z) * 1.2));
             }
 
             HitResult hitResult = ProjectileUtil.getCollision(this, this::canHit);

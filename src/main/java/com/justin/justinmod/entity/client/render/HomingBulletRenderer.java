@@ -36,11 +36,11 @@ public class HomingBulletRenderer extends EntityRenderer<HomingBulletEntity> {
         return 15;
     }
 
-    public void render(HomingBulletEntity homingBulletEntity, float f, float g, MatrixStack matrixStack, VertexConsumerProvider vertexConsumerProvider, int i) {
+    public void render(HomingBulletEntity homingBulletEntity, float yaw, float tickDelta, MatrixStack matrixStack, VertexConsumerProvider vertexConsumerProvider, int i) {
         matrixStack.push();
-        float h = MathHelper.lerpAngleDegrees(g, homingBulletEntity.prevYaw, homingBulletEntity.getYaw());
-        float j = MathHelper.lerp(g, homingBulletEntity.prevPitch, homingBulletEntity.getPitch());
-        float k = (float)homingBulletEntity.age + g;
+        float h = MathHelper.lerpAngleDegrees(tickDelta, homingBulletEntity.prevYaw, homingBulletEntity.getYaw());
+        float j = MathHelper.lerp(tickDelta, homingBulletEntity.prevPitch, homingBulletEntity.getPitch());
+        float k = (float)homingBulletEntity.age + tickDelta;
         matrixStack.translate(0.0F, 0.15F, 0.0F);
         matrixStack.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(MathHelper.sin(k * 0.1F) * 180.0F));
         matrixStack.multiply(RotationAxis.POSITIVE_X.rotationDegrees(MathHelper.cos(k * 0.1F) * 180.0F));
@@ -53,7 +53,7 @@ public class HomingBulletRenderer extends EntityRenderer<HomingBulletEntity> {
         VertexConsumer vertexConsumer2 = vertexConsumerProvider.getBuffer(LAYER);
         this.model.render(matrixStack, vertexConsumer2, i, OverlayTexture.DEFAULT_UV, 1.0F, 1.0F, 1.0F, 0.15F);
         matrixStack.pop();
-        super.render(homingBulletEntity, f, g, matrixStack, vertexConsumerProvider, i);
+        super.render(homingBulletEntity, yaw, tickDelta, matrixStack, vertexConsumerProvider, i);
     }
 
     public Identifier getTexture(HomingBulletEntity homingBulletEntity) {

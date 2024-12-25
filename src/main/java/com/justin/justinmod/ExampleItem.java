@@ -1,6 +1,7 @@
 package com.justin.justinmod;
 
 import com.justin.justinmod.entity.custom.GuardianLaserAuraEntity;
+import com.justin.justinmod.entity.custom.HomingBulletEntity;
 import net.minecraft.entity.*;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
@@ -8,6 +9,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemUsage;
 import net.minecraft.text.Text;
 import net.minecraft.util.*;
+import net.minecraft.util.math.Direction;
 import net.minecraft.world.World;
 
 public class ExampleItem extends Item {
@@ -20,8 +22,6 @@ public class ExampleItem extends Item {
         super(settings);
     }
 
-
-
     @Override
     public TypedActionResult<ItemStack> use(World world, PlayerEntity user, Hand hand) {
         ItemStack itemStack = user.getStackInHand(hand);
@@ -31,13 +31,13 @@ public class ExampleItem extends Item {
             return TypedActionResult.fail(itemStack);
         }
 
-        //HomingBulletEntity bullet = new HomingBulletEntity(world, user, target, Direction.Axis.X);
+        HomingBulletEntity bullet = new HomingBulletEntity(world, user, target, Direction.Axis.X);
         if (!world.isClient()) {
             laser = new GuardianLaserAuraEntity(world, user);
             laser.setBeamTarget(target.getId());
 
-            boolean spawned = world.spawnEntity(laser) || world.spawnEntity(new LightningEntity(EntityType.LIGHTNING_BOLT, world));
-            JustinMod.LOGGER.info(world.isClient() + " " + spawned + " Laser Spawned At: " + laser.getX() + " " + laser.getY() + " " + laser.getZ());
+            boolean spawned = world.spawnEntity(laser);
+            JustinMod.LOGGER.info(world.isClient() + " " + spawned + " Laser Entity Spawned At: " + laser.getX() + " " + laser.getY() + " " + laser.getZ());
             if (!spawned) {
                 return TypedActionResult.fail(itemStack);
             }

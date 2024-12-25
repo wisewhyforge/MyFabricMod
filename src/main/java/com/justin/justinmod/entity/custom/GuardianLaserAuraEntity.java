@@ -14,10 +14,12 @@ import net.minecraft.entity.data.TrackedData;
 import net.minecraft.entity.data.TrackedDataHandlerRegistry;
 import net.minecraft.entity.mob.GuardianEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.projectile.ProjectileEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.packet.s2c.play.EntitySpawnS2CPacket;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.minecraft.world.explosion.Explosion;
 import net.minecraft.world.explosion.ExplosionBehavior;
@@ -27,16 +29,17 @@ import java.util.UUID;
 
 public class GuardianLaserAuraEntity extends Entity {
 
-    private final double RADIUS = 0.5;
+    private final double RADIUS = 2;
     private final double LINEAR_SPEED = 0.1;
     private final double OMEGA = LINEAR_SPEED / RADIUS;
 
     private static final TrackedData<Integer> BEAM_TARGET_ID = DataTracker.registerData(GuardianLaserAuraEntity.class, TrackedDataHandlerRegistry.INTEGER);
+    private static final TrackedData<Integer> COMPANION_ID = DataTracker.registerData(GuardianLaserAuraEntity.class, TrackedDataHandlerRegistry.INTEGER);
+
 
     private int beamTicks;
-    protected static final int WARMUP_TIME = 8;
+    protected static final int WARMUP_TIME = 40;
 
-    private LivingEntity cachedBeamTarget;
 
 
     @Nullable
@@ -46,22 +49,35 @@ public class GuardianLaserAuraEntity extends Entity {
     private UUID companionUuid;
     private LivingEntity target;
 
+    private LivingEntity cachedBeamTarget;
+
+    //Pid Control current error
+    private double curError;
+
+    // Pid control previous error
+    private double prevError;
+
+    //Pid control total error
+    private double totalError;
+
 
     public GuardianLaserAuraEntity(EntityType<?> type, World world) {
         super(type, world);
         this.companion = null;
+        this.noClip = true;
 
         //this.setPosition(playerCompanion.getX() + RADIUS, playerCompanion.getY() + playerCompanion.getStandingEyeHeight() + 1, playerCompanion.getZ() + RADIUS);
         //this.setVelocity(-1 * RADIUS * OMEGA * org.joml.Math.sin(OMEGA * playerCompanion.age), 0, -1 * RADIUS * OMEGA * org.joml.Math.cos(OMEGA * playerCompanion.age));
 
     }
 
-    public GuardianLaserAuraEntity(World world, LivingEntity player) {
+    public GuardianLaserAuraEntity(World world, LivingEntity companion) {
         this(ModEntities.GUARDIAN_LASER_AURA, world);
-        this.companion = player;
-
-        this.setPosition(companion.getX(), companion.getY() + companion.getStandingEyeHeight() + .5F, companion.getZ());
-        this.setVelocity(-1 * RADIUS * OMEGA * org.joml.Math.sin(OMEGA * this.age), 0, -1 * RADIUS * OMEGA * org.joml.Math.cos(OMEGA * this.age));
+        this.companion = companion;
+        this.setPosition(new Vec3d(this.companion.getX(), this.companion.getY() + this.companion.getStandingEyeHeight() + .5F, this.companion.getZ()));
+        this.prevError = 0;
+        this.curError = 0;
+        this.totalError = 0;
     }
 
 
@@ -79,14 +95,15 @@ public class GuardianLaserAuraEntity extends Entity {
                     this.companionUuid = null;
                 }
             }
-            if (companion == null || !companion.isAlive() /*|| (companion instanceof PlayerEntity && ((PlayerEntity) companion).isUsingItem())*/) {
+            if (companion == null || !companion.isAlive()) {
                 JustinMod.LOGGER.info("Killing because Player Companion is null");
                 this.kill();
             } else {
-                this.setPosition(this.companion.getX()  + this.getVelocity().x, companion.getY() + companion.getStandingEyeHeight() + .5F, this.companion.getZ() + this.getVelocity().z);
-                this.setVelocity(-1 * RADIUS * OMEGA * org.joml.Math.sin(OMEGA * this.age), 0, -1 * RADIUS * OMEGA * org.joml.Math.cos(OMEGA * this.age));
+                updateFollowVelocity();
             }
         }
+        this.setPosition(this.getX()  + this.getVelocity().x, this.getY() + this.getVelocity().y, this.getZ() + this.getVelocity().z);
+
 
         if (getBeamTarget() != null) {
             if (this.beamTicks < this.getWarmupTime()) {
@@ -101,25 +118,48 @@ public class GuardianLaserAuraEntity extends Entity {
                 }
             }
 
-//            LivingEntity livingEntity = this.getBeamTarget();
-//            if (livingEntity != null && livingEntity.isAlive()) {
-//                double d = (double)this.getBeamProgress(0.0F);
-//                double e = livingEntity.getX() - this.getX();
-//                double f = livingEntity.getBodyY(0.5) - this.getEyeY();
-//                double g = livingEntity.getZ() - this.getZ();
-//                double h = Math.sqrt(e * e + f * f + g * g);
-//                e /= h;
-//                f /= h;
-//                g /= h;
-//                double j = this.random.nextDouble();
-//
-//                while (j < h) {
-//                    j += 1.8 - d + this.random.nextDouble() * (1.7 - d);
-//                    this.getWorld().addParticle(ParticleTypes.BUBBLE, this.getX() + e * j, this.getEyeY() + f * j, this.getZ() + g * j, 0.0, 0.0, 0.0);
-//                }
-//            }
+            //renderBubbleParticleBeam();
         }
 
+    }
+
+    private void updateFollowVelocity() {
+        Vec3d positionErrorVector = new Vec3d(companion.getX(), companion.getY() + companion.getStandingEyeHeight() + .5F, companion.getZ()).subtract(this.getPos());
+        curError = positionErrorVector.length();
+
+        if (positionErrorVector.length() > 0.01) {
+            double proportionalError = 0.1 * curError;
+            //totalError += curError;
+            double integralError  = 0 * totalError;
+            double derivativeError = 0.1 * (curError - prevError);
+            double pid = proportionalError + integralError + derivativeError;
+            positionErrorVector = positionErrorVector.normalize();
+            positionErrorVector = positionErrorVector.multiply(pid);
+            this.setVelocity(positionErrorVector);
+            prevError = curError;
+        } else {
+            this.setVelocity(new Vec3d(0,0,0));
+        }
+    }
+
+    private void renderBubbleParticleBeam() {
+        LivingEntity livingEntity = this.getBeamTarget();
+        if (livingEntity != null && livingEntity.isAlive()) {
+            double d = (double)this.getBeamProgress(0.0F);
+            double e = livingEntity.getX() - this.getX();
+            double f = livingEntity.getBodyY(0.5) - this.getEyeY();
+            double g = livingEntity.getZ() - this.getZ();
+            double h = Math.sqrt(e * e + f * f + g * g);
+            e /= h;
+            f /= h;
+            g /= h;
+            double j = this.random.nextDouble();
+
+            while (j < h) {
+                j += 1.8 - d + this.random.nextDouble() * (1.7 - d);
+                this.getWorld().addParticle(ParticleTypes.BUBBLE, this.getX() + e * j, this.getEyeY() + f * j, this.getZ() + g * j, 0.0, 0.0, 0.0);
+            }
+        }
     }
 
     public LivingEntity getCompanion() {
@@ -143,11 +183,11 @@ public class GuardianLaserAuraEntity extends Entity {
         if (!this.hasBeamTarget()) {
             return null;
         } else if (this.getWorld().isClient) {
-            if (this.cachedBeamTarget != null) {
+            if (this.cachedBeamTarget != null && this.cachedBeamTarget.isAlive()) {
                 return this.cachedBeamTarget;
             } else {
                 Entity entity = this.getWorld().getEntityById(this.dataTracker.get(BEAM_TARGET_ID));
-                if (entity instanceof LivingEntity) {
+                if (entity instanceof LivingEntity && entity.isAlive()) {
                     this.cachedBeamTarget = (LivingEntity)entity;
                     return this.cachedBeamTarget;
                 } else {
@@ -160,7 +200,7 @@ public class GuardianLaserAuraEntity extends Entity {
     }
 
     public LivingEntity getTarget() {
-        return this.target;
+        return this.target != null && this.target.isAlive() ? this.target : null;
     }
 
 
@@ -252,4 +292,7 @@ public class GuardianLaserAuraEntity extends Entity {
         double f = packet.getVelocityZ();
         this.setVelocity(d,e,f);
     }
+
 }
+
+

@@ -5,7 +5,9 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.ai.TargetPredicate;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.TypeFilter;
+import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.RaycastContext;
 import net.minecraft.world.World;
 
 import java.util.ArrayList;
@@ -44,7 +46,6 @@ public class EntityHelper {
             // add the entity to the list if it is in the player's cone of vision
             if ((angle) <= 10) {
                 livingEntitiesInSight.add(entity);
-
             }
         }
 
