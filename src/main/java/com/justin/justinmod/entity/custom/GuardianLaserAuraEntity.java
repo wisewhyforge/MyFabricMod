@@ -38,7 +38,7 @@ public class GuardianLaserAuraEntity extends Entity {
 
 
     private int beamTicks;
-    protected static final int WARMUP_TIME = 40;
+    protected static final int WARMUP_TIME = 80;
 
 
 
@@ -110,10 +110,11 @@ public class GuardianLaserAuraEntity extends Entity {
                 this.beamTicks++;
             } else if (this.beamTicks >= this.getWarmupTime()) {
                 this.beamTicks = 0;
-                getBeamTarget().damage(this.getDamageSources().indirectMagic(this, this), 5);
+                LivingEntity localTarget = getBeamTarget();
+                localTarget.damage(this.getDamageSources().indirectMagic(this, this), 5);
                 if (!this.getWorld().isClient()) {
                     Explosion explosion = this.getWorld().createExplosion(this,
-                            getBeamTarget().getX(), getBeamTarget().getY() + (getBeamTarget().getHeight() * 0.5), getBeamTarget().getZ(), 5.0F, World.ExplosionSourceType.MOB);
+                            localTarget.getX(), localTarget.getY() + (localTarget.getHeight() * 0.5), localTarget.getZ(), 5.0F, World.ExplosionSourceType.MOB);
 
                 }
             }

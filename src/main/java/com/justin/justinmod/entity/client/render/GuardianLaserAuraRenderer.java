@@ -16,6 +16,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.RotationAxis;
 import net.minecraft.util.math.Vec3d;
+import org.joml.Math;
 import org.joml.Matrix3f;
 import org.joml.Matrix4f;
 
@@ -98,27 +99,28 @@ public class GuardianLaserAuraRenderer extends EntityRenderer<GuardianLaserAuraE
             Matrix3f matrix3f = entry.getNormalMatrix();
 
             // Beacon Rendering
-            renderBeam(matrixStack, vertexConsumerProvider, tickDelta, h, 0, 1024, new float[]{s, t, u}, livingEntity, guardianLaserAuraEntity);
+
+            renderBeam(matrixStack, vertexConsumerProvider, tickDelta, h, guardianLaserAuraEntity.getWorld().getTime(), 0, (int) Math.ceil(vec3d.subtract(vec3d2).length()), new float[]{s, t, u}, livingEntity, guardianLaserAuraEntity);
 
 
             //Guardian Beam Rendering
-            vertex(vertexConsumer, matrix4f, matrix3f, af, m, ag, s, t, u, 0.4999F, ar);
-            vertex(vertexConsumer, matrix4f, matrix3f, af, 0.0F, ag, s, t, u, 0.4999F, aq);
-            vertex(vertexConsumer, matrix4f, matrix3f, ah, 0.0F, ai, s, t, u, 0.0F, aq);
-            vertex(vertexConsumer, matrix4f, matrix3f, ah, m, ai, s, t, u, 0.0F, ar);
-            vertex(vertexConsumer, matrix4f, matrix3f, aj, m, ak, s, t, u, 0.4999F, ar);
-            vertex(vertexConsumer, matrix4f, matrix3f, aj, 0.0F, ak, s, t, u, 0.4999F, aq);
-            vertex(vertexConsumer, matrix4f, matrix3f, al, 0.0F, am, s, t, u, 0.0F, aq);
-            vertex(vertexConsumer, matrix4f, matrix3f, al, m, am, s, t, u, 0.0F, ar);
-            float as = 0.0F;
-            if (guardianLaserAuraEntity.age % 2 == 0) {
-                as = 0.5F;
-            }
-
-            vertex(vertexConsumer, matrix4f, matrix3f, x, m, y, s, t, u, 0.5F, as + 0.5F);
-            vertex(vertexConsumer, matrix4f, matrix3f, z, m, aa, s, t, u, 1.0F, as + 0.5F);
-            vertex(vertexConsumer, matrix4f, matrix3f, ad, m, ae, s, t, u, 1.0F, as);
-            vertex(vertexConsumer, matrix4f, matrix3f, ab, m, ac, s, t, u, 0.5F, as);
+//            vertex(vertexConsumer, matrix4f, matrix3f, af, m, ag, s, t, u, 0.4999F, ar);
+//            vertex(vertexConsumer, matrix4f, matrix3f, af, 0.0F, ag, s, t, u, 0.4999F, aq);
+//            vertex(vertexConsumer, matrix4f, matrix3f, ah, 0.0F, ai, s, t, u, 0.0F, aq);
+//            vertex(vertexConsumer, matrix4f, matrix3f, ah, m, ai, s, t, u, 0.0F, ar);
+//            vertex(vertexConsumer, matrix4f, matrix3f, aj, m, ak, s, t, u, 0.4999F, ar);
+//            vertex(vertexConsumer, matrix4f, matrix3f, aj, 0.0F, ak, s, t, u, 0.4999F, aq);
+//            vertex(vertexConsumer, matrix4f, matrix3f, al, 0.0F, am, s, t, u, 0.0F, aq);
+//            vertex(vertexConsumer, matrix4f, matrix3f, al, m, am, s, t, u, 0.0F, ar);
+//            float as = 0.0F;
+//            if (guardianLaserAuraEntity.age % 2 == 0) {
+//                as = 0.5F;
+//            }
+//
+//            vertex(vertexConsumer, matrix4f, matrix3f, x, m, y, s, t, u, 0.5F, as + 0.5F);
+//            vertex(vertexConsumer, matrix4f, matrix3f, z, m, aa, s, t, u, 1.0F, as + 0.5F);
+//            vertex(vertexConsumer, matrix4f, matrix3f, ad, m, ae, s, t, u, 1.0F, as);
+//            vertex(vertexConsumer, matrix4f, matrix3f, ab, m, ac, s, t, u, 0.5F, as);
             matrixStack.pop();
 
         }
@@ -166,9 +168,9 @@ public class GuardianLaserAuraRenderer extends EntityRenderer<GuardianLaserAuraE
     }
 
     private void renderBeam(
-            MatrixStack matrices, VertexConsumerProvider vertexConsumers, float tickDelta, float beamProgress, int yOffset, int maxY, float[] color, LivingEntity target, GuardianLaserAuraEntity aura
+            MatrixStack matrices, VertexConsumerProvider vertexConsumers, float tickDelta, float beamProgress, long worldTime, int yOffset, int maxY, float[] color, LivingEntity target, GuardianLaserAuraEntity aura
     ) {
-        renderBeam(matrices, vertexConsumers, BEAM_TEXTURE, tickDelta, 1.0F, beamProgress, yOffset, maxY, color, 0.2F, 0.25F, target, aura);
+        renderBeam(matrices, vertexConsumers, BEAM_TEXTURE, tickDelta, 1.0F, beamProgress, worldTime, yOffset, maxY, color, 0.2F, 0.25F, target, aura);
     }
 
     public void renderBeam(
@@ -178,6 +180,7 @@ public class GuardianLaserAuraRenderer extends EntityRenderer<GuardianLaserAuraE
             float tickDelta,
             float heightScale,
             float beamProgress,
+            long worldTime,
             int yOffset,
             int maxY,
             float[] color,
@@ -190,22 +193,20 @@ public class GuardianLaserAuraRenderer extends EntityRenderer<GuardianLaserAuraE
         matrices.push();
         matrices.translate(0, -0.15F, 0);
 
-        Vec3d vec3d = this.fromLerpedPosition(target, (double)target.getHeight() * 0.5, tickDelta);
-        Vec3d vec3d2 = this.fromLerpedPosition(aura, (double)0, tickDelta);
-        Vec3d vec3d3 = vec3d.subtract(vec3d2);
-        float distanceLength = (float)(vec3d3.length() + 1.0);
-        vec3d3 = vec3d3.normalize();
-        float yComponentDiff = (float)Math.acos(vec3d3.y);
-        float xZComponentDiff = (float)Math.atan2(vec3d3.z, vec3d3.x);
-        //matrices.multiply(RotationAxis.POSITIVE_X.rotationDegrees(((float)(Math.PI / 2) + xZComponentDiff) * (180.0F / (float)Math.PI)));
-        //matrices.multiply(RotationAxis.POSITIVE_X.rotationDegrees(yComponentDiff * (180.0F / (float)Math.PI)));
         matrices.push();
+        float f = (float) java.lang.Math.floorMod(worldTime, 40) + tickDelta;
         float g = maxY < 0 ? beamProgress : -beamProgress;
         float h = MathHelper.fractionalPart(g * 0.2F - (float)MathHelper.floor(g * 0.1F));
         float j = color[0];
         float k = color[1];
         float l = color[2];
-        matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(beamProgress*180.0F));
+        float smoothRotation = (f * 2.25F - 45.0F);
+        float beamProgressScale = ((Math.sin(beamProgress * 2 * (float)Math.PI - ((float) Math.PI)) + 1) * 2);
+        float x_transform = 0.4F * (((aura.age) % aura.getWarmupTime()) - (aura.getWarmupTime() / 2));
+        float sigmoidRotationScale = ((float)Math.exp(x_transform) / ((float)Math.exp(x_transform) + 1)) * 7F;
+        float rotationDegrees = sigmoidRotationScale * (beamProgress * 90);
+        // Just sets the rotation
+        matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(rotationDegrees));
         float m = 0.0F;
         float p = 0.0F;
         float q = -innerRadius;

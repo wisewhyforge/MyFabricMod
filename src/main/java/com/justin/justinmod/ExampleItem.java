@@ -28,7 +28,8 @@ public class ExampleItem extends Item {
         LivingEntity target = EntityHelper.getPlayerLookingAtEntity(world, user);
 
         if (target == null) {
-            return TypedActionResult.fail(itemStack);
+            //return TypedActionResult.fail(itemStack);
+            return ItemUsage.consumeHeldItem(world, user, hand);
         }
 
         HomingBulletEntity bullet = new HomingBulletEntity(world, user, target, Direction.Axis.X);
@@ -39,7 +40,7 @@ public class ExampleItem extends Item {
             boolean spawned = world.spawnEntity(laser);
             JustinMod.LOGGER.info(world.isClient() + " " + spawned + " Laser Entity Spawned At: " + laser.getX() + " " + laser.getY() + " " + laser.getZ());
             if (!spawned) {
-                return TypedActionResult.fail(itemStack);
+                //return TypedActionResult.fail(itemStack);
             }
         }
 
