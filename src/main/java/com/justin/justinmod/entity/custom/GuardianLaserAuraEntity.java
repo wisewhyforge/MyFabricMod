@@ -1,35 +1,28 @@
 package com.justin.justinmod.entity.custom;
 
-import com.justin.justinmod.ExampleItem;
 import com.justin.justinmod.JustinMod;
 import com.justin.justinmod.entity.ModEntities;
-import net.minecraft.client.MinecraftClient;
+import com.justin.justinmod.ShockwaveApplier;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.MovementType;
-import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.data.TrackedData;
 import net.minecraft.entity.data.TrackedDataHandlerRegistry;
-import net.minecraft.entity.mob.GuardianEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.projectile.ProjectileEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.packet.s2c.play.EntitySpawnS2CPacket;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
-import net.minecraft.world.explosion.Explosion;
-import net.minecraft.world.explosion.ExplosionBehavior;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.UUID;
 
 public class GuardianLaserAuraEntity extends Entity {
 
-    private final double RADIUS = 2;
+    private final double RADIUS = 0.5;
+    private final double PERIOD_IN_TICKS = 100;
     private final double LINEAR_SPEED = 0.1;
     private final double OMEGA = LINEAR_SPEED / RADIUS;
 
@@ -38,7 +31,7 @@ public class GuardianLaserAuraEntity extends Entity {
 
 
     private int beamTicks;
-    protected static final int WARMUP_TIME = 80;
+    protected static final int WARMUP_TIME = 40;
 
 
 
@@ -96,8 +89,7 @@ public class GuardianLaserAuraEntity extends Entity {
                 }
             }
             if (companion == null || !companion.isAlive()) {
-                JustinMod.LOGGER.info("Killing because Player Companion is null");
-                this.kill();
+                this.discard();
             } else {
                 updateFollowVelocity();
             }
@@ -113,8 +105,10 @@ public class GuardianLaserAuraEntity extends Entity {
                 LivingEntity localTarget = getBeamTarget();
                 localTarget.damage(this.getDamageSources().indirectMagic(this, this), 5);
                 if (!this.getWorld().isClient()) {
-                    Explosion explosion = this.getWorld().createExplosion(this,
-                            localTarget.getX(), localTarget.getY() + (localTarget.getHeight() * 0.5), localTarget.getZ(), 5.0F, World.ExplosionSourceType.MOB);
+//                    Explosion explosion = this.getWorld().createExplosion(this,
+//                            localTarget.getX(), localTarget.getY() + (localTarget.getHeight() * 0.5), localTarget.getZ(), 5.0F, World.ExplosionSourceType.MOB);
+                    ShockwaveApplier.createShockwave(this,null, null,
+                            localTarget.getX(), localTarget.getY(), localTarget.getZ(), 10.0F, false, World.ExplosionSourceType.MOB, true);
 
                 }
             }
@@ -125,7 +119,11 @@ public class GuardianLaserAuraEntity extends Entity {
     }
 
     private void updateFollowVelocity() {
-        Vec3d positionErrorVector = new Vec3d(companion.getX(), companion.getY() + companion.getStandingEyeHeight() + .5F, companion.getZ()).subtract(this.getPos());
+        double frequency = this.age * Math.PI / (PERIOD_IN_TICKS / 2);
+        float companionTargetXCoord = (float) (RADIUS * Math.cos(frequency) + companion.getX());
+        float companionTargetZCoord = (float) (RADIUS * Math.sin(frequency) + companion.getZ());
+        Vec3d companionPosition = new Vec3d(companionTargetXCoord, companion.getY() + companion.getStandingEyeHeight() + .5F, companionTargetZCoord);
+        Vec3d positionErrorVector = companionPosition.subtract(this.getPos());
         curError = positionErrorVector.length();
 
         if (positionErrorVector.length() > 0.01) {
@@ -294,6 +292,10 @@ public class GuardianLaserAuraEntity extends Entity {
         this.setVelocity(d,e,f);
     }
 
+    @Override
+    public boolean isImmuneToExplosion() {
+        return true;
+    }
 }
 
 

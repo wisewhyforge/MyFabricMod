@@ -34,13 +34,15 @@ public class ExampleItem extends Item {
 
         HomingBulletEntity bullet = new HomingBulletEntity(world, user, target, Direction.Axis.X);
         if (!world.isClient()) {
-            laser = new GuardianLaserAuraEntity(world, user);
-            laser.setBeamTarget(target.getId());
+            if (laser == null) {
+                laser = new GuardianLaserAuraEntity(world, user);
+                laser.setBeamTarget(target.getId());
 
-            boolean spawned = world.spawnEntity(laser);
-            JustinMod.LOGGER.info(world.isClient() + " " + spawned + " Laser Entity Spawned At: " + laser.getX() + " " + laser.getY() + " " + laser.getZ());
-            if (!spawned) {
-                //return TypedActionResult.fail(itemStack);
+                boolean spawned = world.spawnEntity(laser);
+                JustinMod.LOGGER.info(world.isClient() + " " + spawned + " Laser Entity Spawned At: " + laser.getX() + " " + laser.getY() + " " + laser.getZ());
+                if (!spawned) {
+                    //return TypedActionResult.fail(itemStack);
+                }
             }
         }
 
@@ -51,7 +53,7 @@ public class ExampleItem extends Item {
     @Override
     public void onStoppedUsing(ItemStack stack, World world, LivingEntity user, int remainingUseTicks) {
         if (!world.isClient() && laser != null) {
-            laser.kill();
+            laser.discard();
             laser = null;
         }
         super.onStoppedUsing(stack, world, user, remainingUseTicks);
