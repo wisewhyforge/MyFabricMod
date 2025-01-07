@@ -27,8 +27,6 @@ public class GuardianLaserAuraEntity extends Entity {
     private final double OMEGA = LINEAR_SPEED / RADIUS;
 
     private static final TrackedData<Integer> BEAM_TARGET_ID = DataTracker.registerData(GuardianLaserAuraEntity.class, TrackedDataHandlerRegistry.INTEGER);
-    private static final TrackedData<Integer> COMPANION_ID = DataTracker.registerData(GuardianLaserAuraEntity.class, TrackedDataHandlerRegistry.INTEGER);
-
 
     private int beamTicks;
     protected static final int WARMUP_TIME = 40;
@@ -103,12 +101,12 @@ public class GuardianLaserAuraEntity extends Entity {
             } else if (this.beamTicks >= this.getWarmupTime()) {
                 this.beamTicks = 0;
                 LivingEntity localTarget = getBeamTarget();
-                localTarget.damage(this.getDamageSources().indirectMagic(this, this), 5);
+                //localTarget.damage(this.getDamageSources().indirectMagic(this, this), 1);
                 if (!this.getWorld().isClient()) {
 //                    Explosion explosion = this.getWorld().createExplosion(this,
 //                            localTarget.getX(), localTarget.getY() + (localTarget.getHeight() * 0.5), localTarget.getZ(), 5.0F, World.ExplosionSourceType.MOB);
-                    ShockwaveApplier.createShockwave(this,null, null,
-                            localTarget.getX(), localTarget.getY(), localTarget.getZ(), 10.0F, false, World.ExplosionSourceType.MOB, true);
+                    //ShockwaveApplier.createShockwave(this,null, null,
+                     //       localTarget.getX(), localTarget.getY(), localTarget.getZ(), 10.0F, false, World.ExplosionSourceType.MOB, true);
 
                 }
             }

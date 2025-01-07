@@ -38,20 +38,23 @@ public class HomingBulletRenderer extends EntityRenderer<HomingBulletEntity> {
 
     public void render(HomingBulletEntity homingBulletEntity, float yaw, float tickDelta, MatrixStack matrixStack, VertexConsumerProvider vertexConsumerProvider, int i) {
         matrixStack.push();
-        float h = MathHelper.lerpAngleDegrees(tickDelta, homingBulletEntity.prevYaw, homingBulletEntity.getYaw());
-        float j = MathHelper.lerp(tickDelta, homingBulletEntity.prevPitch, homingBulletEntity.getPitch());
-        float k = (float)homingBulletEntity.age + tickDelta;
+        float lerpYaw = MathHelper.lerpAngleDegrees(tickDelta, homingBulletEntity.prevYaw, homingBulletEntity.getYaw());
+        float lerpPitch = MathHelper.lerp(tickDelta, homingBulletEntity.prevPitch, homingBulletEntity.getPitch());
+        float ageChange = (float)homingBulletEntity.age + tickDelta;
         matrixStack.translate(0.0F, 0.15F, 0.0F);
-        matrixStack.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(MathHelper.sin(k * 0.1F) * 180.0F));
-        matrixStack.multiply(RotationAxis.POSITIVE_X.rotationDegrees(MathHelper.cos(k * 0.1F) * 180.0F));
-        matrixStack.multiply(RotationAxis.POSITIVE_Z.rotationDegrees(MathHelper.sin(k * 0.15F) * 360.0F));
+        matrixStack.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(MathHelper.sin(ageChange * 0.1F) * 180.0F));
+        matrixStack.multiply(RotationAxis.POSITIVE_X.rotationDegrees(MathHelper.cos(ageChange * 0.1F) * 180.0F));
+        matrixStack.multiply(RotationAxis.POSITIVE_Z.rotationDegrees(MathHelper.sin(ageChange * 0.15F) * 360.0F));
         matrixStack.scale(-0.5F, -0.5F, 0.5F);
-        this.model.setAngles(homingBulletEntity, 0.0F, 0.0F, 0.0F, h, j);
+        this.model.setAngles(homingBulletEntity, 0.0F, 0.0F, 0.0F, lerpYaw, lerpPitch);
         VertexConsumer vertexConsumer = vertexConsumerProvider.getBuffer(this.model.getLayer(TEXTURE));
+        // Render the solid inside layer
         this.model.render(matrixStack, vertexConsumer, i, OverlayTexture.DEFAULT_UV, 1.0F, 1.0F, 1.0F, 1.0F);
+        // Scale the outside layer
         matrixStack.scale(1.5F, 1.5F, 1.5F);
         VertexConsumer vertexConsumer2 = vertexConsumerProvider.getBuffer(LAYER);
-        this.model.render(matrixStack, vertexConsumer2, i, OverlayTexture.DEFAULT_UV, 1.0F, 1.0F, 1.0F, 0.15F);
+        // Render the outer translucrent layer with the additional scaling
+        this.model.render(matrixStack, vertexConsumer2, i, OverlayTexture.DEFAULT_UV, 1.0F, 1.0F, 1.0F, 0.5F);
         matrixStack.pop();
         super.render(homingBulletEntity, yaw, tickDelta, matrixStack, vertexConsumerProvider, i);
     }

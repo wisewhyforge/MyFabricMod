@@ -1,7 +1,9 @@
 package com.justin.justinmod;
 
+import com.justin.justinmod.entity.ModEntities;
 import com.justin.justinmod.entity.custom.GuardianLaserAuraEntity;
 import com.justin.justinmod.entity.custom.HomingBulletEntity;
+import com.justin.justinmod.entity.custom.OrbitalLaserAuraEntity;
 import net.minecraft.entity.*;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
@@ -33,11 +35,16 @@ public class ExampleItem extends Item {
         }
 
         HomingBulletEntity bullet = new HomingBulletEntity(world, user, target, Direction.Axis.X);
+
+
         if (!world.isClient()) {
+            OrbitalLaserAuraEntity orbitalLaserAuraEntity = new OrbitalLaserAuraEntity(world, target);
+            JustinMod.LOGGER.info(String.valueOf(world.spawnEntity(orbitalLaserAuraEntity)));
+
             if (laser == null) {
+
                 laser = new GuardianLaserAuraEntity(world, user);
                 laser.setBeamTarget(target.getId());
-
                 boolean spawned = world.spawnEntity(laser);
                 JustinMod.LOGGER.info(world.isClient() + " " + spawned + " Laser Entity Spawned At: " + laser.getX() + " " + laser.getY() + " " + laser.getZ());
                 if (!spawned) {

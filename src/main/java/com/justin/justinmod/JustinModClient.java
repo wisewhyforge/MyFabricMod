@@ -5,14 +5,18 @@ import com.justin.justinmod.entity.client.model.GuardianLaserAuraModel;
 import com.justin.justinmod.entity.client.model.HelicopterModel;
 import com.justin.justinmod.entity.client.ModModelLayers;
 import com.justin.justinmod.entity.client.model.HomingBulletEntityModel;
+import com.justin.justinmod.entity.client.model.OrbitalLaserAuraModel;
 import com.justin.justinmod.entity.client.render.GuardianLaserAuraRenderer;
 import com.justin.justinmod.entity.client.render.HelicopterRenderer;
 import com.justin.justinmod.entity.client.render.HomingBulletRenderer;
+import com.justin.justinmod.entity.client.render.OrbitalLaserAuraRenderer;
 import com.justin.justinmod.entity.custom.HomingBulletEntity;
 import com.justin.justinmod.event.KeyInputHandler;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityModelLayerRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
+
+import javax.swing.text.html.parser.Entity;
 
 public class JustinModClient implements ClientModInitializer {
 
@@ -26,6 +30,9 @@ public class JustinModClient implements ClientModInitializer {
 
         EntityModelLayerRegistry.registerModelLayer(ModModelLayers.GUARDIAN_LASER_AURA, GuardianLaserAuraModel::getTexturedModelData);
         EntityRendererRegistry.register(ModEntities.GUARDIAN_LASER_AURA, ctx -> new GuardianLaserAuraRenderer(ctx, new GuardianLaserAuraModel(ctx.getPart(ModModelLayers.GUARDIAN_LASER_AURA))));
+
+        EntityModelLayerRegistry.registerModelLayer(ModModelLayers.ORBITAL_LASER_AURA, OrbitalLaserAuraModel::getTexturedModelData);
+        EntityRendererRegistry.register(ModEntities.ORBITAL_LASER_ENTITY, ctx -> new OrbitalLaserAuraRenderer(ctx, new OrbitalLaserAuraModel(ctx.getPart(ModModelLayers.ORBITAL_LASER_AURA))));
 
         KeyInputHandler.register();
 
