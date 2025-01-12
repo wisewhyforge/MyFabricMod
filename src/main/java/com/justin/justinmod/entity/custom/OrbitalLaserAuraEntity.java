@@ -11,6 +11,8 @@ import net.minecraft.entity.data.TrackedDataHandlerRegistry;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.packet.s2c.play.EntitySpawnS2CPacket;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.sound.SoundCategory;
+import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
@@ -89,6 +91,8 @@ public class OrbitalLaserAuraEntity extends Entity {
                 this.dataTracker.set(BEAM_TICKS, 0);
                 if (!this.getWorld().isClient) {
                     this.getWorld().createExplosion(this, this.getX(), this.getY() , this.getZ(), 5.0F, World.ExplosionSourceType.MOB);
+                } else {
+                    this.getWorld().playSound(this.getX(), this.getY(), this.getZ(), SoundEvents.BLOCK_BEACON_ACTIVATE, SoundCategory.HOSTILE, 5.0F, 1.0F, true);
                 }
             }
         }
@@ -118,7 +122,7 @@ public class OrbitalLaserAuraEntity extends Entity {
     }
 
     private void updateFollowVelocity() {
-        Vec3d companionPosition = new Vec3d(this.target.getX(), this.target.getY(), this.target.getZ());
+        Vec3d companionPosition = new Vec3d(this.target.getX(), this.target.getY() + 1, this.target.getZ());
         Vec3d positionErrorVector = companionPosition.subtract(this.getPos());
         curError = positionErrorVector.length();
 

@@ -3,7 +3,8 @@
 	"package": "com.justin.justinmod.mixin",
 	"compatibilityLevel": "JAVA_17",
 	"mixins": [
-      "HelicopterRidingMixin"
+      "HelicopterRidingMixin",
+		"ThreadedAnvilChunkStorageMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1
